@@ -1,0 +1,46 @@
+2025-09-12 18:19:33,284 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 18:19:33,320 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 18:19:33,725 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 18:20:55,283 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 18:20:55,328 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 18:20:55,603 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 18:22:13,836 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 18:22:13,875 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 18:22:14,160 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 18:23:08,382 - utils.config_manager - INFO - Header mappings loaded successfully
+2025-09-12 18:26:56,601 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 18:26:56,643 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 18:26:56,948 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 18:27:01,398 - utils.config_manager - INFO - Header mappings loaded successfully
+2025-09-12 18:28:55,340 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 18:28:55,379 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 18:28:55,677 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 18:35:58,442 - utils.config_manager - INFO - Header mappings loaded successfully
+2025-09-12 18:42:40,280 - core.excel_processor - ERROR - Saving and formatting failed: This sheet is too large! Your sheet size is: 9799477, 30 Max sheet size is: 1048576, 16384
+2025-09-12 18:42:40,280 - core.excel_processor - ERROR - Standard processing failed: Failed to save and format file: This sheet is too large! Your sheet size is: 9799477, 30 Max sheet size is: 1048576, 16384
+2025-09-12 18:42:40,280 - core.excel_processor - ERROR - File processing failed: Failed to save and format file: This sheet is too large! Your sheet size is: 9799477, 30 Max sheet size is: 1048576, 16384
+2025-09-12 19:02:03,758 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 19:02:03,804 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 19:02:04,034 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 21:15:26,428 - utils.config_manager - INFO - Header mappings loaded successfully
+2025-09-12 21:22:43,186 - core.excel_processor - ERROR - Large dataset saving failed: Row numbers must be between 1 and 1048576. Row number supplied was 1048577
+2025-09-12 21:22:43,186 - core.excel_processor - ERROR - Saving and formatting failed: Failed to save large dataset: Row numbers must be between 1 and 1048576. Row number supplied was 1048577
+2025-09-12 21:22:43,186 - core.excel_processor - ERROR - Standard processing failed: Failed to save and format file: Failed to save large dataset: Row numbers must be between 1 and 1048576. Row number supplied was 1048577
+2025-09-12 21:22:43,186 - core.excel_processor - ERROR - File processing failed: Failed to save and format file: Failed to save large dataset: Row numbers must be between 1 and 1048576. Row number supplied was 1048577
+2025-09-12 21:26:01,119 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 21:26:01,155 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 21:26:01,489 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 21:30:49,563 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 21:30:49,613 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 21:30:49,976 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 21:31:06,392 - utils.config_manager - INFO - Header mappings loaded successfully
+2025-09-12 21:31:06,946 - core.excel_processor - INFO - File size: 5.9 MB
+2025-09-12 21:31:06,946 - core.excel_processor - INFO - Using streaming processing mode
+2025-09-12 21:31:07,171 - core.excel_processor - ERROR - Streaming processing failed: read_excel() got an unexpected keyword argument 'chunksize'
+2025-09-12 21:31:07,171 - core.excel_processor - ERROR - File processing failed: read_excel() got an unexpected keyword argument 'chunksize'
+2025-09-12 21:32:04,699 - utils.config_manager - INFO - Configuration reloaded
+2025-09-12 21:32:04,742 - utils.config_manager - INFO - Settings loaded successfully
+2025-09-12 21:32:05,101 - __main__ - INFO - Starting Excel Formatter Pro
+2025-09-12 21:33:11,244 - utils.config_manager - INFO - Header mappings loaded successfully
+2025-09-12 21:33:11,799 - core.excel_processor - INFO - File size: 5.9 MB
+2025-09-12 21:33:11,799 - core.excel_processor - INFO - Using streaming processing mode

@@ -1,0 +1,17 @@
+# Excel Formatter Pro - Requirements
+# Core dependencies for Excel processing and UI
+
+# GUI Framework
+customtkinter>=5.2.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0
+
+# Data Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Additional utilities
+Pillow>=10.0.0
