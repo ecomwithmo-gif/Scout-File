@@ -1,6 +1,9 @@
 # Excel Formatter Pro - Requirements
 # Core dependencies for Excel processing and UI
 
+# Web Framework (for Vercel deployment)
+Flask>=2.3.0
+
 # GUI Framework
 customtkinter>=5.2.0
 
