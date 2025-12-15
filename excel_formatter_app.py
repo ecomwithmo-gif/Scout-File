@@ -34,10 +34,10 @@ HEADER_MAP = {
     'Sales Rank: 30 days avg.': 'Sales Rank 30',
     'Sales Rank: 90 days avg.': 'Sales Rank 90',
     'Sales Rank: 180 days avg.': 'Sales Rank 180',
-    'Buy Box 🚚: Current': 'Buy Box',
-    'Buy Box 🚚: 30 days avg.': 'Buy Box 30',
-    'Buy Box 🚚: 90 days avg.': 'Buy Box 90',
-    'Buy Box 🚚: 180 days avg.': 'Buy Box 180',
+    'Buy Box : Current': 'Buy Box',
+    'Buy Box : 30 days avg.': 'Buy Box 30',
+    'Buy Box : 90 days avg.': 'Buy Box 90',
+    'Buy Box : 180 days avg.': 'Buy Box 180',
     'Amazon: 90 days OOS': 'AMZ In Stock %',
     'Buy Box: % Amazon 90 days': 'Buy Box: % Amazon 90 days',
     'Amazon: Availability of the Amazon offer': 'Amazon Availability',
@@ -70,6 +70,20 @@ class ExcelFormatterApp:
         self.processing = False
         self.chunk_size = 1000  # Process data in chunks for better performance
         self.last_dir = os.getcwd()
+        self.main_columns = []
+        self.cost_columns = []
+        self.main_preview_frame = None
+        self.cost_preview_frame = None
+        self.main_code_column_var = ctk.StringVar(value="Auto detect (Imported by Code/UPC)")
+        self.cost_code_column_var = ctk.StringVar(value="Auto detect")
+        self.cost_cost_column_var = ctk.StringVar(value="Auto detect")
+        self.cost_msrp_column_var = ctk.StringVar(value="Auto detect")
+        self.cost_warning_label = None
+        self.main_code_menu = None
+        self.cost_code_menu = None
+        self.cost_cost_menu = None
+        self.cost_msrp_menu = None
+        self.cost_validation_message_shown = False
         
         # Configure root window with white gradient background
         self.root.configure(bg="#f5f7fb")
@@ -88,21 +102,33 @@ class ExcelFormatterApp:
         self.create_progress_section()
         
     def create_header(self):
-        """Create elegant header"""
+        """Create a clean header with a white, elevated feel"""
         header_frame = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        header_frame.pack(fill="x", pady=(28, 18), padx=32)
+        header_frame.pack(fill="x", pady=(24, 14), padx=32)
+        
+        pill = ctk.CTkLabel(
+            header_frame,
+            text="Scout File",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color="#0f172a",
+            fg_color="#e2e8f0",
+            corner_radius=50,
+            padx=10,
+            pady=6
+        )
+        pill.pack(anchor="w", pady=(0, 6))
         
         title_label = ctk.CTkLabel(
             header_frame, 
-            text="Formatter workspace", 
-            font=ctk.CTkFont(family="Inter", size=30, weight="bold"),
+            text="Excel Formatter workspace", 
+            font=ctk.CTkFont(family="Inter", size=28, weight="bold"),
             text_color="#0f172a"
         )
         title_label.pack(anchor="w", pady=(0, 6))
         
         subtitle_label = ctk.CTkLabel(
             header_frame,
-            text="Load your files, set costs, and process without the clutter.",
+            text="A calm white canvas with soft shadows - load, preview, and format without losing fidelity.",
             font=ctk.CTkFont(family="Inter", size=13),
             text_color="#475569"
         )
@@ -128,45 +154,67 @@ class ExcelFormatterApp:
         self.create_action_section(right_panel)
         
     def create_upload_section(self, parent):
-        """Create elegant file upload section with shadow effects"""
-        # Main file upload card with shadow effect (using border to simulate shadow)
+        """Create file upload cards with live column previews and mapping"""
+        cards_wrapper = ctk.CTkFrame(parent, fg_color="transparent")
+        cards_wrapper.pack(fill="both", expand=True)
+        cards_wrapper.grid_columnconfigure((0, 1), weight=1, uniform="upload")
+        
+        # Main file upload card
         main_upload_card = ctk.CTkFrame(
-            parent,
+            cards_wrapper,
             fg_color="#ffffff",
-            corner_radius=16,
+            corner_radius=18,
             border_width=1,
             border_color="#e5e7eb"
         )
-        main_upload_card.pack(fill="both", expand=True, pady=(0, 16))
+        main_upload_card.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 16))
         
-        # Card content with padding
-        card_content = ctk.CTkFrame(main_upload_card, fg_color="transparent")
+        card_content = ctk.CTkFrame(main_upload_card, fg_color="#ffffff")
         card_content.pack(fill="both", expand=True, padx=24, pady=24)
         
-        # Card header
+        header_row = ctk.CTkFrame(card_content, fg_color="#ffffff")
+        header_row.pack(fill="x")
+        
         card_header = ctk.CTkLabel(
-            card_content,
+            header_row,
             text="Main Excel File",
             font=ctk.CTkFont(family="Inter", size=18, weight="bold"),
             text_color="#0f172a"
         )
-        card_header.pack(anchor="w", pady=(0, 14))
+        card_header.pack(side="left", anchor="w")
         
-        # Upload button - elegant style
+        tag = ctk.CTkLabel(
+            header_row,
+            text="Required",
+            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            text_color="#0f172a",
+            fg_color="#e2e8f0",
+            corner_radius=8,
+            padx=10,
+            pady=6
+        )
+        tag.pack(side="right")
+        
+        ctk.CTkLabel(
+            card_content,
+            text="Upload the primary Scout export. Columns preview instantly.",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color="#6b7280"
+        ).pack(anchor="w", pady=(8, 12))
+        
         self.upload_btn = ctk.CTkButton(
             card_content,
             text="Choose File",
             command=self.upload_file,
-            width=240,
-            height=44,
+            width=220,
+            height=42,
             font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
-            corner_radius=10
+            fg_color="#0ea5e9",
+            hover_color="#0284c7",
+            corner_radius=12
         )
-        self.upload_btn.pack(anchor="w", pady=(0, 12))
+        self.upload_btn.pack(anchor="w", pady=(0, 10))
         
-        # File status
         self.file_status_label = ctk.CTkLabel(
             card_content,
             text="No file selected",
@@ -180,68 +228,213 @@ class ExcelFormatterApp:
             font=ctk.CTkFont(family="Inter", size=12),
             text_color="#94a3b8"
         )
-        self.file_meta_label.pack(anchor="w", pady=(6, 0))
+        self.file_meta_label.pack(anchor="w", pady=(4, 10))
         
-        # Secondary file upload card with shadow effect
-        secondary_upload_card = ctk.CTkFrame(
-            parent,
+        # Main columns preview
+        ctk.CTkLabel(
+            card_content,
+            text="Column preview",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color="#0f172a"
+        ).pack(anchor="w", pady=(6, 6))
+        
+        preview_shell = ctk.CTkFrame(card_content, fg_color="#f8fafc", corner_radius=12)
+        preview_shell.pack(fill="both", expand=True, pady=(0, 10))
+        self.main_preview_frame = ctk.CTkScrollableFrame(preview_shell, fg_color="#f8fafc", height=120, corner_radius=12)
+        self.main_preview_frame.pack(fill="both", expand=True, padx=6, pady=6)
+        self.render_column_preview(self.main_preview_frame, [], "Columns will appear here after upload.")
+        
+        # Main code mapping
+        mapping_frame = ctk.CTkFrame(card_content, fg_color="#ffffff")
+        mapping_frame.pack(fill="x", pady=(6, 0))
+        
+        ctk.CTkLabel(
+            mapping_frame,
+            text="Match using column",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color="#0f172a"
+        ).pack(anchor="w", pady=(0, 6))
+        
+        self.main_code_menu = ctk.CTkOptionMenu(
+            mapping_frame,
+            values=["Auto detect (Imported by Code/UPC)"],
+            variable=self.main_code_column_var,
+            command=self.on_main_mapping_change,
+            width=240,
+            fg_color="#0ea5e9",
+            button_color="#0ea5e9",
+            button_hover_color="#0284c7",
+            text_color="#ffffff"
+        )
+        self.main_code_menu.pack(anchor="w")
+        
+        ctk.CTkLabel(
+            mapping_frame,
+            text="We will default to Imported by Code or UPC unless you pick another column.",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color="#6b7280"
+        ).pack(anchor="w", pady=(6, 0))
+        
+        # Cost/MSRP card
+        cost_card = ctk.CTkFrame(
+            cards_wrapper,
             fg_color="#ffffff",
-            corner_radius=16,
+            corner_radius=18,
             border_width=1,
             border_color="#e5e7eb"
         )
-        secondary_upload_card.pack(fill="both", expand=True)
+        cost_card.grid(row=0, column=1, sticky="nsew", padx=(10, 0), pady=(0, 16))
         
-        # Secondary card content
-        secondary_content = ctk.CTkFrame(secondary_upload_card, fg_color="transparent")
-        secondary_content.pack(fill="both", expand=True, padx=24, pady=24)
+        cost_content = ctk.CTkFrame(cost_card, fg_color="#ffffff")
+        cost_content.pack(fill="both", expand=True, padx=24, pady=24)
         
-        # Secondary card header
+        cost_header_row = ctk.CTkFrame(cost_content, fg_color="#ffffff")
+        cost_header_row.pack(fill="x")
+        
         secondary_header = ctk.CTkLabel(
-            secondary_content,
+            cost_header_row,
             text="Cost & MSRP Data",
             font=ctk.CTkFont(family="Inter", size=18, weight="bold"),
             text_color="#0f172a"
         )
-        secondary_header.pack(anchor="w", pady=(0, 6))
+        secondary_header.pack(side="left", anchor="w")
         
         optional_label = ctk.CTkLabel(
-            secondary_content,
-            text="(Optional)",
-            font=ctk.CTkFont(family="Inter", size=12),
-            text_color="#94a3b8"
+            cost_header_row,
+            text="Optional",
+            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            text_color="#0f172a",
+            fg_color="#e2e8f0",
+            corner_radius=8,
+            padx=10,
+            pady=6
         )
-        optional_label.pack(anchor="w", pady=(0, 16))
+        optional_label.pack(side="right")
         
-        # Secondary upload button
+        ctk.CTkLabel(
+            cost_content,
+            text="Upload to merge COST/MSRP. UPC + COST are required; map them live if names differ.",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color="#6b7280"
+        ).pack(anchor="w", pady=(8, 12))
+        
         self.upload_btn2 = ctk.CTkButton(
-            secondary_content,
+            cost_content,
             text="Choose File",
             command=self.upload_file2,
-            width=240,
-            height=44,
+            width=220,
+            height=42,
             font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
-            corner_radius=10
+            fg_color="#0ea5e9",
+            hover_color="#0284c7",
+            corner_radius=12
         )
-        self.upload_btn2.pack(anchor="w", pady=(0, 12))
+        self.upload_btn2.pack(anchor="w", pady=(0, 10))
         
-        # Secondary file status
         self.file2_status_label = ctk.CTkLabel(
-            secondary_content,
+            cost_content,
             text="No file selected",
             font=ctk.CTkFont(family="Inter", size=13),
             text_color="#64748b"
         )
         self.file2_status_label.pack(anchor="w")
         self.file2_meta_label = ctk.CTkLabel(
-            secondary_content,
+            cost_content,
             text="Optional file not loaded",
             font=ctk.CTkFont(family="Inter", size=12),
             text_color="#94a3b8"
         )
-        self.file2_meta_label.pack(anchor="w", pady=(6, 0))
+        self.file2_meta_label.pack(anchor="w", pady=(4, 10))
+        
+        # Cost columns preview
+        ctk.CTkLabel(
+            cost_content,
+            text="Column preview",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color="#0f172a"
+        ).pack(anchor="w", pady=(6, 6))
+        
+        cost_preview_shell = ctk.CTkFrame(cost_content, fg_color="#f8fafc", corner_radius=12)
+        cost_preview_shell.pack(fill="both", expand=True, pady=(0, 10))
+        self.cost_preview_frame = ctk.CTkScrollableFrame(cost_preview_shell, fg_color="#f8fafc", height=120, corner_radius=12)
+        self.cost_preview_frame.pack(fill="both", expand=True, padx=6, pady=6)
+        self.render_column_preview(self.cost_preview_frame, [], "Columns will appear here after upload.")
+        
+        # Cost mapping controls
+        mapping_frame_cost = ctk.CTkFrame(cost_content, fg_color="#ffffff")
+        mapping_frame_cost.pack(fill="x", pady=(6, 0))
+        
+        ctk.CTkLabel(
+            mapping_frame_cost,
+            text="Map columns",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color="#0f172a"
+        ).pack(anchor="w", pady=(0, 6))
+        
+        self.cost_code_menu = ctk.CTkOptionMenu(
+            mapping_frame_cost,
+            values=["Auto detect"],
+            variable=self.cost_code_column_var,
+            command=self.on_cost_mapping_change,
+            width=220,
+            fg_color="#0ea5e9",
+            button_color="#0ea5e9",
+            button_hover_color="#0284c7",
+            text_color="#ffffff"
+        )
+        self.cost_code_menu.pack(anchor="w", pady=(0, 6))
+        ctk.CTkLabel(
+            mapping_frame_cost,
+            text="UPC / Imported by Code column",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color="#6b7280"
+        ).pack(anchor="w", pady=(0, 6))
+        
+        self.cost_cost_menu = ctk.CTkOptionMenu(
+            mapping_frame_cost,
+            values=["Auto detect"],
+            variable=self.cost_cost_column_var,
+            command=self.on_cost_mapping_change,
+            width=220,
+            fg_color="#0ea5e9",
+            button_color="#0ea5e9",
+            button_hover_color="#0284c7",
+            text_color="#ffffff"
+        )
+        self.cost_cost_menu.pack(anchor="w", pady=(4, 6))
+        ctk.CTkLabel(
+            mapping_frame_cost,
+            text="COST column (required)",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color="#6b7280"
+        ).pack(anchor="w", pady=(0, 6))
+        
+        self.cost_msrp_menu = ctk.CTkOptionMenu(
+            mapping_frame_cost,
+            values=["Auto detect"],
+            variable=self.cost_msrp_column_var,
+            command=self.on_cost_mapping_change,
+            width=220,
+            fg_color="#e2e8f0",
+            button_color="#e2e8f0",
+            button_hover_color="#cbd5e1",
+            text_color="#0f172a"
+        )
+        self.cost_msrp_menu.pack(anchor="w", pady=(4, 6))
+        ctk.CTkLabel(
+            mapping_frame_cost,
+            text="MSRP column (optional)",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color="#6b7280"
+        ).pack(anchor="w", pady=(0, 6))
+        
+        self.cost_warning_label = ctk.CTkLabel(
+            mapping_frame_cost,
+            text="UPC and COST required to merge. Set them above if auto-detect fails.",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color="#475569"
+        )
+        self.cost_warning_label.pack(anchor="w", pady=(4, 0))
         
     def create_settings_section(self, parent):
         """Create elegant settings section with shadow effects"""
@@ -436,7 +629,7 @@ class ExcelFormatterApp:
             height=10,
             corner_radius=5,
             fg_color="#e5e7eb",
-            progress_color="#6366f1",
+            progress_color="#0ea5e9",
             border_width=0
         )
         self.progress_bar.pack(fill="x", pady=(0, 0))
@@ -847,6 +1040,9 @@ class ExcelFormatterApp:
         file_name = os.path.basename(self.file_path)
         self.file_status_label.configure(text=f"Loaded {file_name}", text_color="#16a34a")
         self.file_meta_label.configure(text=f"{rows:,} rows x {cols:,} columns", text_color="#475569")
+        self.main_columns = list(self.df.columns) if self.df is not None else []
+        self.render_column_preview(self.main_preview_frame, self.main_columns, "Columns will appear here after upload.")
+        self.update_main_mapping_options()
         self.recommend_chunk_size(rows)
         self.download_btn.configure(state='normal')
         self.update_progress(0.2, f"File loaded: {rows:,} rows")
@@ -897,13 +1093,156 @@ class ExcelFormatterApp:
         cols = len(self.df2.columns) if self.df2 is not None else 0
         self.file2_status_label.configure(text=f"Loaded {file_name}", text_color="#16a34a")
         self.file2_meta_label.configure(text=f"{rows:,} rows x {cols:,} columns", text_color="#475569")
+        self.cost_columns = [str(col) for col in self.df2.columns]
+        self.render_column_preview(self.cost_preview_frame, self.cost_columns, "Columns will appear here after upload.")
+        self.cost_validation_message_shown = False
+        self.update_cost_mapping_options()
+        self.validate_cost_columns(show_message=False)
         
     def update_file2_status_error(self, error_msg):
         """Update secondary file status on error"""
         self.upload_btn2.configure(text="Choose File", state="normal")
         self.file2_status_label.configure(text=f"Error: {error_msg[:50]}...", text_color="#ef4444")
         self.file2_meta_label.configure(text="Optional file failed to load.", text_color="#ef4444")
+        if self.cost_warning_label:
+            self.cost_warning_label.configure(text="Upload a valid COST file to map columns.", text_color="#ef4444")
         messagebox.showerror('Error', f'Failed to read Cost/MSRP file: {error_msg}')
+    
+    def render_column_preview(self, container, columns, empty_text):
+        """Render a simple column preview list inside a scrollable frame"""
+        if container is None:
+            return
+        for child in container.winfo_children():
+            child.destroy()
+        
+        if not columns:
+            ctk.CTkLabel(
+                container,
+                text=empty_text,
+                font=ctk.CTkFont(family="Inter", size=11),
+                text_color="#94a3b8"
+            ).pack(anchor="w", pady=(0, 4))
+            return
+        
+        for col in columns:
+            ctk.CTkLabel(
+                container,
+                text=f"- {col}",
+                font=ctk.CTkFont(family="Inter", size=12),
+                text_color="#0f172a"
+            ).pack(anchor="w", pady=(0, 4))
+    
+    def auto_select_column(self, columns, keywords):
+        """Return the first column containing all keywords"""
+        for col in columns:
+            normalized = str(col).lower()
+            if all(keyword in normalized for keyword in keywords):
+                return col
+        return None
+    
+    def set_option_menu_values(self, option_menu, variable, options, preferred=None):
+        """Safely update option menu choices and selection"""
+        if option_menu is None or variable is None:
+            return
+        safe_options = options or ["Auto detect"]
+        option_menu.configure(values=safe_options)
+        if preferred and preferred in safe_options:
+            variable.set(preferred)
+        else:
+            variable.set(safe_options[0])
+    
+    def update_main_mapping_options(self):
+        """Populate main file code mapping choices"""
+        options = ["Auto detect (Imported by Code/UPC)"] + (self.main_columns or [])
+        preferred = (
+            self.auto_select_column(self.main_columns, ['imported', 'code']) or
+            self.auto_select_column(self.main_columns, ['upc']) or
+            self.auto_select_column(self.main_columns, ['ean']) or
+            self.auto_select_column(self.main_columns, ['gtin'])
+        ) or "Auto detect (Imported by Code/UPC)"
+        self.set_option_menu_values(self.main_code_menu, self.main_code_column_var, options, preferred)
+    
+    def update_cost_mapping_options(self):
+        """Populate cost/MSRP mapping choices"""
+        options = self.cost_columns or []
+        base = ["Auto detect"]
+        code_guess = (
+            self.auto_select_column(options, ['imported', 'code']) or
+            self.auto_select_column(options, ['upc']) or
+            self.auto_select_column(options, ['ean']) or
+            self.auto_select_column(options, ['gtin'])
+        ) or "Auto detect"
+        cost_guess = self.auto_select_column(options, ['cost']) or "Auto detect"
+        msrp_guess = self.auto_select_column(options, ['msrp']) or "Auto detect"
+        self.set_option_menu_values(self.cost_code_menu, self.cost_code_column_var, base + options, code_guess)
+        self.set_option_menu_values(self.cost_cost_menu, self.cost_cost_column_var, base + options, cost_guess)
+        self.set_option_menu_values(self.cost_msrp_menu, self.cost_msrp_column_var, base + options, msrp_guess)
+    
+    def get_main_code_column(self, rename_map):
+        """Return the user-selected or auto-detected main code column after renaming"""
+        choice = (self.main_code_column_var.get() or "").strip()
+        if choice.lower().startswith("auto detect"):
+            return None
+        return rename_map.get(choice, choice)
+    
+    def get_cost_mapping(self, df2_columns=None):
+        """Return selected mapping for cost file, filtered to existing columns"""
+        columns = df2_columns or self.cost_columns or []
+        
+        def normalize(value):
+            if not value:
+                return None
+            lower = value.lower()
+            if lower.startswith("auto detect"):
+                return None
+            return value if value in columns else None
+        
+        return {
+            'code': normalize(self.cost_code_column_var.get()),
+            'cost': normalize(self.cost_cost_column_var.get()),
+            'msrp': normalize(self.cost_msrp_column_var.get())
+        }
+    
+    def validate_cost_columns(self, show_message=False):
+        """Ensure the cost file has UPC/Code and COST columns mapped"""
+        if self.df2 is None:
+            if self.cost_warning_label:
+                self.cost_warning_label.configure(text="Upload a cost file to merge COST/MSRP (optional).", text_color="#475569")
+            return True
+        
+        df2_cols = self.cost_columns or [str(col) for col in self.df2.columns]
+        mapping = self.get_cost_mapping(df2_cols)
+        
+        code_choice = mapping['code'] or self.auto_select_column(df2_cols, ['imported', 'code']) or self.auto_select_column(df2_cols, ['upc']) or self.auto_select_column(df2_cols, ['ean']) or self.auto_select_column(df2_cols, ['gtin'])
+        cost_choice = mapping['cost'] or self.auto_select_column(df2_cols, ['cost'])
+        
+        missing = []
+        if not code_choice:
+            missing.append("UPC / Imported by Code")
+        if not cost_choice:
+            missing.append("COST")
+        
+        if missing:
+            message = f"Missing: {', '.join(missing)}. Pick columns above to continue."
+            if self.cost_warning_label:
+                self.cost_warning_label.configure(text=message, text_color="#dc2626")
+            if show_message and not self.cost_validation_message_shown:
+                messagebox.showerror('Cost file missing required columns', message)
+                self.cost_validation_message_shown = True
+            return False
+        
+        if self.cost_warning_label:
+            self.cost_warning_label.configure(text="Mapping looks good. COST will merge when processing.", text_color="#16a34a")
+        self.cost_validation_message_shown = False
+        return True
+    
+    def on_main_mapping_change(self, _=None):
+        """Handle main mapping changes (placeholder for future analytics)"""
+        return
+    
+    def on_cost_mapping_change(self, _=None):
+        """Handle cost mapping changes and refresh validation"""
+        self.validate_cost_columns(show_message=False)
         
     def recommend_chunk_size(self, row_count):
         """Suggest a chunk size based on detected row count to balance speed and memory."""
@@ -945,6 +1284,10 @@ class ExcelFormatterApp:
             
         base, ext = os.path.splitext(file_path_str)
         save_path = base + '_formatted.xlsx'
+        
+        # Validate cost file mappings early
+        if self.df2 is not None and not self.validate_cost_columns(show_message=True):
+            return
         
         # Update chunk size from settings
         try:
@@ -996,6 +1339,8 @@ class ExcelFormatterApp:
             
             # Create a copy of the dataframe
             df = self.df.copy()
+            rename_map = {col: HEADER_MAP.get(col, col) for col in df.columns}
+            selected_main_code = self.get_main_code_column(rename_map)
             
             # Delete Locale and Image columns if they exist
             columns_to_delete = ['Locale', 'Image']
@@ -1004,7 +1349,7 @@ class ExcelFormatterApp:
                     df.drop(columns=[col], inplace=True)
             
             # Rename columns
-            df.rename(columns=HEADER_MAP, inplace=True)
+            df.rename(columns=rename_map, inplace=True)
             self.root.after(0, lambda: self.update_progress(0.3, "Processing columns..."))
             
             # Handle Pack Fee - only fill empty cells with 7 and mark for special formatting
@@ -1058,29 +1403,33 @@ class ExcelFormatterApp:
                 self.root.after(0, lambda: self.update_progress(0.4, "Merging cost data..."))
                 df2 = self.df2.copy()
                 df2.columns = [str(col).strip() for col in df2.columns]
+                mapping = self.get_cost_mapping(df2.columns)
                 
                 # Look for matching code column in cost file - try "Imported by Code" first, then "UPC" as fallback
-                imported_code_col2 = None
-                cost_col2 = None
-                msrp_col2 = None
+                imported_code_col2 = mapping['code']
+                cost_col2 = mapping['cost']
+                msrp_col2 = mapping['msrp']
                 for col in df2.columns:
                     col_upper = col.upper()
-                    if 'IMPORTED BY CODE' in col_upper or ('IMPORTED' in col_upper and 'CODE' in col_upper):
+                    if imported_code_col2 is None and ('IMPORTED BY CODE' in col_upper or ('IMPORTED' in col_upper and 'CODE' in col_upper)):
                         imported_code_col2 = col
                         print(f"DEBUG: Found Imported by Code column in cost file: '{col}'")
                     elif 'UPC' in col_upper and imported_code_col2 is None:
                         # Fallback to UPC if Imported by Code not found
                         imported_code_col2 = col
                         print(f"DEBUG: Found UPC column in cost file (using as Imported by Code): '{col}'")
-                    if 'COST' in col_upper and cost_col2 is None:
+                    if cost_col2 is None and 'COST' in col_upper:
                         cost_col2 = col
                         print(f"DEBUG: Found COST column in cost file: '{col}'")
-                    if 'MSRP' in col_upper and msrp_col2 is None:
+                    if msrp_col2 is None and 'MSRP' in col_upper:
                         msrp_col2 = col
                         print(f"DEBUG: Found MSRP column in cost file: '{col}'")
                 
                 print(f"DEBUG: Cost file columns: {list(df2.columns)}")
                 print(f"DEBUG: Matching code column: {imported_code_col2}, COST column: {cost_col2}, MSRP column: {msrp_col2}")
+                
+                if not imported_code_col2 or not cost_col2:
+                    raise Exception("Cost/MSRP file is missing a UPC/Imported by Code column or COST column. Choose them in the mapping panel and retry.")
                 
                 if imported_code_col2 and (cost_col2 or msrp_col2):
                     merge_cols = [imported_code_col2]
@@ -1127,7 +1476,10 @@ class ExcelFormatterApp:
                     
                     # Check if main file has "Imported by Code" column, or fallback to UPC/EAN/GTIN
                     main_code_col = None
-                    if 'Imported by Code' in df.columns:
+                    if selected_main_code and selected_main_code in df.columns:
+                        main_code_col = selected_main_code
+                        print(f"DEBUG: Using user-selected column '{selected_main_code}' for matching")
+                    elif 'Imported by Code' in df.columns:
                         main_code_col = 'Imported by Code'
                         print(f"DEBUG: Found 'Imported by Code' column in main file with {df['Imported by Code'].notna().sum()} non-null values")
                     elif 'UPC' in df.columns:
@@ -1598,7 +1950,7 @@ class ExcelFormatterApp:
         
         total_cost = cost + pack_fee
         
-        # Calculate profit margin: (Profit / Sale Price) × 100
+        # Calculate profit margin: (Profit / Sale Price) x 100
         # Profit = Revenue - Total Cost, Sale Price = Buy Box Price
         if buybox_val > 0:
             profit = revenue - total_cost
@@ -1655,7 +2007,7 @@ class ExcelFormatterApp:
         
         total_cost = cost + pack_fee
         
-        # Calculate profit margin: (Profit / Sale Price) × 100
+        # Calculate profit margin: (Profit / Sale Price) x 100
         # Profit = Revenue - Total Cost, Sale Price = MSRP
         if msrp > 0:
             profit = revenue - total_cost
